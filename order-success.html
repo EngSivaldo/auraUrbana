@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedido Realizado com Sucesso | Aura Urbana</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#4F46E5', // Azul índigo
+                        'secondary': '#10B981', // Verde esmeralda
+                        'tertiary': '#FBBF24', // Amarelo
+                        'dark-gray': '#1F2937',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            color: #1F2937;
+        }
+        h1, h2, h3, .logo {
+            font-family: 'Montserrat', sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="bg-white sticky top-0 z-50 shadow-lg">
+        <div class="bg-primary text-white text-center py-2 text-sm font-medium">
+            ✨ Frete GRÁTIS em compras acima de R$ 300!
+        </div>
+
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
+            
+            <a href="index.html" class="logo text-3xl font-extrabold text-dark-gray hover:text-primary transition duration-150">Aura Urbana</a>
+            
+            <div class="flex items-center space-x-4">
+                 <a href="index.html" class="text-lg text-dark-gray hover:text-primary font-medium">Continuar Comprando</a>
+            </div>
+        </div>
+        
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div class="max-w-xl mx-auto text-center bg-white p-10 rounded-xl shadow-2xl border border-secondary">
+            <svg class="w-20 h-20 text-secondary mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h1 class="text-4xl font-extrabold text-secondary mb-4">Pedido Realizado com Sucesso!</h1>
+            <h2 class="text-2xl font-semibold text-dark-gray mb-8">Obrigado pela sua compra na Aura Urbana.</h2>
+            
+            <p class="text-lg text-gray-600 mb-6">O seu pedido **#AU-2025-9874** foi processado e será enviado em breve. Enviamos um e-mail de confirmação para o endereço fornecido.</p>
+            
+            <div class="space-y-4">
+                <a href="index.html" class="inline-block w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-opacity-90 transition duration-150">
+                    Voltar para a Página Inicial
+                </a>
+                <a href="order-details.html" class="inline-block w-full border border-dark-gray text-dark-gray py-3 rounded-lg font-bold hover:bg-gray-100 transition duration-150">
+                  Ver Detalhes do Pedido
+              </a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-dark-gray text-white py-8 main-footer mt-auto">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p>&copy; 2025 Aura Urbana. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    </body>
+</html>

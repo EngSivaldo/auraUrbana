@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre Nós - Aura Urbana</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#4F46E5', // Azul índigo
+                        'secondary': '#10B981', // Verde esmeralda
+                        'tertiary': '#FBBF24', // Amarelo
+                        'dark-gray': '#1F2937',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            color: #1F2937; /* dark-gray */
+        }
+        h1, h2, h3, .logo {
+            font-family: 'Montserrat', sans-serif;
+        }
+        /* Estilos do Painel do Carrinho (repetidos para garantir o funcionamento) */
+        #cart-overlay, #cart-panel {
+            transition: transform 0.3s ease-in-out;
+        }
+        #cart-panel.open {
+            transform: translateX(0);
+        }
+        #cart-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            background-color: white;
+            z-index: 1000;
+            transform: translateX(100%);
+            box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        #cart-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+        #cart-overlay.open {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="bg-white sticky top-0 z-50 shadow-lg">
+
+        <div class="bg-primary text-white text-center py-2 text-sm font-medium">
+            ✨ Frete GRÁTIS em compras acima de R$ 300!
+        </div>
+
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
+            
+            <a href="index.html" class="logo text-3xl font-extrabold text-dark-gray hover:text-primary transition duration-150">Aura Urbana</a>
+            
+            <div class="flex-1 max-w-lg mx-8 hidden lg:block">
+                <div class="relative">
+                    <input type="text" placeholder="O que você procura hoje? Ex: Vestido Linho"
+                           class="w-full p-3 pl-4 pr-12 border-2 border-gray-300 rounded-full focus:outline-none focus:border-primary transition duration-150 text-dark-gray">
+                    <button class="absolute right-0 top-0 mt-3 mr-4 text-gray-500 hover:text-primary">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                
+                <a href="#" id="cart-btn" class="text-xl text-dark-gray hover:text-secondary relative p-2">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    <span id="cart-count" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">0</span>
+                </a>
+
+                <button id="menu-toggle-btn" class="text-2xl text-dark-gray hover:text-primary md:hidden p-2">
+                    &#9776;
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-dark-gray hidden md:block border-t border-gray-700">
+             <nav class="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-center space-x-10 py-3 main-nav">
+                <a href="index.html" class="text-gray-100 hover:text-secondary transition duration-150 font-medium">Início</a>
+                <a href="novidades.html" class="text-gray-100 hover:text-secondary transition duration-150 font-medium">Novidades</a>
+                <a href="masculino.html" class="text-gray-100 hover:text-secondary transition duration-150 font-medium">Masculino</a>
+                <a href="feminino.html" class="text-gray-100 hover:text-secondary transition duration-150 font-medium">Feminino</a>
+                <a href="acessorios.html" class="text-gray-100 hover:text-secondary transition duration-150 font-medium">Acessórios</a>
+                <a href="contacto.html" class="text-gray-100 hover:text-secondary transition duration-150 font-medium">Contacto</a>
+            </nav>
+        </div>
+        
+    </header>
+
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-[900] hidden"></div>
+    <nav id="mobile-menu-panel" class="fixed top-0 left-0 w-64 h-full bg-white z-[901] transform -translate-x-full transition-transform duration-300 shadow-xl">
+        <div class="p-6">
+            <h3 class="text-2xl font-bold text-primary mb-6">Navegação</h3>
+            <a href="index.html" class="block py-2 text-dark-gray hover:bg-gray-100 rounded-md font-semibold">Início</a>
+            <a href="novidades.html" class="block py-2 text-dark-gray hover:bg-gray-100 rounded-md">Novidades</a>
+            <a href="masculino.html" class="block py-2 text-dark-gray hover:bg-gray-100 rounded-md">Masculino</a>
+            <a href="feminino.html" class="block py-2 text-dark-gray hover:bg-gray-100 rounded-md">Feminino</a>
+            <a href="acessorios.html" class="block py-2 text-dark-gray hover:bg-gray-100 rounded-md">Acessórios</a>
+            <a href="contacto.html" class="block py-2 text-dark-gray hover:bg-gray-100 rounded-md">Contacto</a>
+        </div>
+        <button id="close-menu-btn" class="absolute top-4 right-4 text-3xl text-gray-500 hover:text-dark-gray leading-none">
+            &times;
+        </button>
+    </nav>
+
+    <div id="cart-overlay"></div>
+    <aside id="cart-panel">
+        <div class="cart-header p-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="text-xl font-bold text-dark-gray">🛒 Seu Carrinho</h3>
+            <button id="close-cart-btn" class="text-gray-500 hover:text-gray-700 text-2xl leading-none">
+                &times;
+            </button>
+        </div>
+        
+        <div id="cart-items-list" class="flex-1 p-4 overflow-y-auto">
+            <p class="empty-message text-gray-500 italic">O seu carrinho está vazio.</p>
+        </div>
+        
+        <div class="cart-summary p-4 border-t border-gray-200">
+            <div class="flex justify-between text-lg font-bold mb-4">
+                <p class="total-label text-dark-gray">Total:</p>
+                <p class="total-value text-secondary" id="cart-total">R$ 0,00</p>
+            </div>
+            <button class="w-full bg-secondary text-white py-3 rounded-lg font-semibold hover:bg-opacity-90 transition duration-150 checkout-btn">
+                Finalizar Compra
+            </button>
+        </div>
+    </aside>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 page-content">
+        
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-center text-dark-gray mb-10">
+                A História da Aura Urbana
+            </h1>
+
+            <div class="space-y-8 text-lg text-gray-700 leading-relaxed">
+                <p>
+                    Fundada em 2018, a **Aura Urbana** nasceu com a missão de redefinir a moda minimalista. Acreditamos que a verdadeira sofisticação reside na simplicidade e na qualidade. Nossas coleções são desenhadas para pessoas que valorizam o essencial, buscando peças atemporais que resistem às tendências passageiras.
+                </p>
+
+                <div class="p-6 bg-gray-100 rounded-lg border-l-4 border-primary">
+                    <h2 class="text-2xl font-bold text-dark-gray mb-3">Nossos Valores</h2>
+                    <ul class="list-disc list-inside space-y-2 ml-4">
+                        <li>**Sustentabilidade:** Priorizamos materiais eco-friendly e processos de produção éticos.</li>
+                        <li>**Qualidade:** Foco em tecidos duráveis e acabamento impecável.</li>
+                        <li>**Design Atemporal:** Peças versáteis que se encaixam em qualquer estação e ocasião.</li>
+                    </ul>
+                </div>
+                
+                <p>
+                    Cada item da Aura Urbana é mais do que apenas vestuário; é um investimento em estilo e consciência. Desde o design inicial até a embalagem final, cada detalhe é cuidadosamente planejado para oferecer uma experiência de compra única e responsável.
+                </p>
+
+                <p class="text-center font-semibold text-xl text-primary pt-4">
+                    Junte-se a nós e descubra a força da elegância descomplicada.
+                </p>
+            </div>
+        </div>
+
+    </main>
+    
+    <footer class="bg-dark-gray text-white py-8 main-footer">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p>&copy; 2025 Aura Urbana. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

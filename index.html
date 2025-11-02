@@ -35,7 +35,7 @@
             font-family: 'Montserrat', sans-serif;
         }
         
-        /* Estilos do Painel do Carrinho */
+        /* Estilos do Painel do Carrinho (Mantido) */
         #cart-overlay, #cart-panel {
             transition: transform 0.3s ease-in-out;
         }
@@ -70,7 +70,7 @@
             display: block;
         }
         
-        /* ESTILOS PARA O CARROSSEL DE IMAGENS (Animação) */
+        /* ESTILOS DO CARROSSEL DE IMAGENS (Configuração Original: Item de 250px) */
         .image-carousel-container {
             overflow: hidden; 
         }
@@ -80,7 +80,7 @@
             width: fit-content; 
         }
         .carousel-item {
-            width: 250px; /* Largura fixa para cada imagem */
+            width: 250px; /* Largura ORIGINAL de cada item */
             flex-shrink: 0; 
             margin-right: 1.5rem; /* Espaçamento entre as imagens */
         }
@@ -96,7 +96,7 @@
                 transform: translateX(0);
             }
             100% {
-                /* Desloca a largura de 6 imagens + o espaçamento entre elas */
+                /* Desloca a largura de 6 itens (250px + 1.5rem) */
                 transform: translateX(calc(-6 * (250px + 1.5rem))); 
             }
         }
@@ -329,7 +329,7 @@
             }
 
             cartBtn.addEventListener('click', (e) => {
-                e.preventDefault(); // Impede o link de navegar
+                e.preventDefault(); 
                 toggleCartPanel();
             });
             closeCartBtn.addEventListener('click', toggleCartPanel);
@@ -338,24 +338,7 @@
             // Simulação de Carrinho
             const cartCount = document.getElementById('cart-count');
             
-            // Adicionar item de teste (apenas para simulação visual)
-            // Simulação de item no carrinho
-            // setTimeout(() => {
-            //     cartCount.textContent = 1;
-            //     document.getElementById('cart-total').textContent = 'R$ 150,00';
-            //     const cartList = document.getElementById('cart-items-list');
-            //     cartList.innerHTML = `
-            //         <div class="flex items-center space-x-4 mb-4 pb-4 border-b">
-            //             <img src="https://picsum.photos/id/169/64/64" class="w-16 h-16 object-cover rounded" alt="Produto">
-            //             <div class="flex-1">
-            //                 <p class="font-semibold">Camiseta Básica</p>
-            //                 <p class="text-sm text-gray-500">Tam: M | Cor: Preto</p>
-            //                 <p class="text-primary font-bold">R$ 150,00</p>
-            //             </div>
-            //             <button class="text-red-500 hover:text-red-700 text-xl leading-none">&times;</button>
-            //         </div>
-            //     `;
-            // }, 1000);
+            // O restante da lógica de JS pode ser adicionada aqui...
         });
 
     </script>

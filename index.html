@@ -34,6 +34,7 @@
         h1, h2, h3, .logo {
             font-family: 'Montserrat', sans-serif;
         }
+        
         /* Estilos do Painel do Carrinho */
         #cart-overlay, #cart-panel {
             transition: transform 0.3s ease-in-out;
@@ -68,12 +69,49 @@
         #cart-overlay.open {
             display: block;
         }
+        
+        /* ESTILOS PARA O CARROSSEL DE IMAGENS (Animação) */
+        .image-carousel-container {
+            overflow: hidden; 
+        }
+        .image-carousel {
+            display: flex;
+            animation: slide 30s linear infinite; /* Velocidade da animação */
+            width: fit-content; 
+        }
+        .carousel-item {
+            width: 250px; /* Largura fixa para cada imagem */
+            flex-shrink: 0; 
+            margin-right: 1.5rem; /* Espaçamento entre as imagens */
+        }
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Animação que faz o movimento lateral contínuo */
+        @keyframes slide {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                /* Desloca a largura de 6 imagens + o espaçamento entre elas */
+                transform: translateX(calc(-6 * (250px + 1.5rem))); 
+            }
+        }
+        
+        /* Necessário para garantir que o contêiner de imagens se ajuste */
+        .image-carousel::after {
+            content: "";
+            display: block;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
 
     <header class="bg-white sticky top-0 z-50 shadow-lg">
-
         <div class="bg-primary text-white text-center py-2 text-sm font-medium">
             ✨ Frete GRÁTIS em compras acima de R$ 300!
         </div>
@@ -117,6 +155,50 @@
         </div>
         
     </header>
+    
+    <section class="image-carousel-container w-full py-4 bg-gray-50 border-b border-gray-200">
+        <div class="image-carousel">
+            
+            <a href="#" class="carousel-item shadow-lg rounded-lg overflow-hidden mr-6">
+                <img src="https://picsum.photos/id/1015/250/256" alt="Moda 1" class="h-64 object-cover">
+            </a>
+            <a href="#" class="carousel-item shadow-lg rounded-lg overflow-hidden mr-6">
+                <img src="https://picsum.photos/id/169/250/256" alt="Moda 2" class="h-64 object-cover">
+            </a>
+            <a href="#" class="carousel-item shadow-lg rounded-lg overflow-hidden mr-6">
+                <img src="https://picsum.photos/id/175/250/256" alt="Moda 3" class="h-64 object-cover">
+            </a>
+            <a href="#" class="carousel-item shadow-lg rounded-lg overflow-hidden mr-6">
+                <img src="https://picsum.photos/id/21/250/256" alt="Moda 4" class="h-64 object-cover">
+            </a>
+            <a href="#" class="carousel-item shadow-lg rounded-lg overflow-hidden mr-6">
+                <img src="https://picsum.photos/id/257/250/256" alt="Moda 5" class="h-64 object-cover">
+            </a>
+            <a href="#" class="carousel-item shadow-lg rounded-lg overflow-hidden mr-6">
+                <img src="https://picsum.photos/id/34/250/256" alt="Moda 6" class="h-64 object-cover">
+            </a>
+
+            <a href="#" class="carousel-item shadow-lg rounded-lg overflow-hidden mr-6">
+                <img src="https://picsum.photos/id/1015/250/256" alt="Moda 1 Repetida" class="h-64 object-cover">
+            </a>
+            <a href="#" class="carousel-item shadow-lg rounded-lg overflow-hidden mr-6">
+                <img src="https://picsum.photos/id/169/250/256" alt="Moda 2 Repetida" class="h-64 object-cover">
+            </a>
+            <a href="#" class="carousel-item shadow-lg rounded-lg overflow-hidden mr-6">
+                <img src="https://picsum.photos/id/175/250/256" alt="Moda 3 Repetida" class="h-64 object-cover">
+            </a>
+            <a href="#" class="carousel-item shadow-lg rounded-lg overflow-hidden mr-6">
+                <img src="https://picsum.photos/id/21/250/256" alt="Moda 4 Repetida" class="h-64 object-cover">
+            </a>
+            <a href="#" class="carousel-item shadow-lg rounded-lg overflow-hidden mr-6">
+                <img src="https://picsum.photos/id/257/250/256" alt="Moda 5 Repetida" class="h-64 object-cover">
+            </a>
+            <a href="#" class="carousel-item shadow-lg rounded-lg overflow-hidden mr-6">
+                <img src="https://picsum.photos/id/34/250/256" alt="Moda 6 Repetida" class="h-64 object-cover">
+            </a>
+            
+        </div>
+    </section>
 
     <div id="mobile-menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-[900] hidden"></div>
     <nav id="mobile-menu-panel" class="fixed top-0 left-0 w-64 h-full bg-white z-[901] transform -translate-x-full transition-transform duration-300 shadow-xl">
@@ -218,6 +300,64 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const closeMenuBtn = document.getElementById('close-menu-btn');
+            const mobileMenuPanel = document.getElementById('mobile-menu-panel');
+            const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+
+            const cartBtn = document.getElementById('cart-btn');
+            const closeCartBtn = document.getElementById('close-cart-btn');
+            const cartPanel = document.getElementById('cart-panel');
+            const cartOverlay = document.getElementById('cart-overlay');
+
+            // --- Funcionalidade do Menu Mobile ---
+            function toggleMobileMenu() {
+                mobileMenuPanel.classList.toggle('-translate-x-full');
+                mobileMenuOverlay.classList.toggle('hidden');
+            }
+
+            menuToggleBtn.addEventListener('click', toggleMobileMenu);
+            closeMenuBtn.addEventListener('click', toggleMobileMenu);
+            mobileMenuOverlay.addEventListener('click', toggleMobileMenu);
+
+            // --- Funcionalidade do Carrinho ---
+            function toggleCartPanel() {
+                cartPanel.classList.toggle('open');
+                cartOverlay.classList.toggle('open');
+            }
+
+            cartBtn.addEventListener('click', (e) => {
+                e.preventDefault(); // Impede o link de navegar
+                toggleCartPanel();
+            });
+            closeCartBtn.addEventListener('click', toggleCartPanel);
+            cartOverlay.addEventListener('click', toggleCartPanel);
+            
+            // Simulação de Carrinho
+            const cartCount = document.getElementById('cart-count');
+            
+            // Adicionar item de teste (apenas para simulação visual)
+            // Simulação de item no carrinho
+            // setTimeout(() => {
+            //     cartCount.textContent = 1;
+            //     document.getElementById('cart-total').textContent = 'R$ 150,00';
+            //     const cartList = document.getElementById('cart-items-list');
+            //     cartList.innerHTML = `
+            //         <div class="flex items-center space-x-4 mb-4 pb-4 border-b">
+            //             <img src="https://picsum.photos/id/169/64/64" class="w-16 h-16 object-cover rounded" alt="Produto">
+            //             <div class="flex-1">
+            //                 <p class="font-semibold">Camiseta Básica</p>
+            //                 <p class="text-sm text-gray-500">Tam: M | Cor: Preto</p>
+            //                 <p class="text-primary font-bold">R$ 150,00</p>
+            //             </div>
+            //             <button class="text-red-500 hover:text-red-700 text-xl leading-none">&times;</button>
+            //         </div>
+            //     `;
+            // }, 1000);
+        });
+
+    </script>
 </body>
 </html>

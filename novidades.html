@@ -34,7 +34,7 @@
         h1, h2, h3, .logo {
             font-family: 'Montserrat', sans-serif;
         }
-        /* Estilos do Painel do Carrinho */
+        /* Estilos do Painel do Carrinho (mantidos) */
         #cart-overlay, #cart-panel {
             transition: transform 0.3s ease-in-out;
         }
@@ -112,10 +112,11 @@
         <div class="bg-dark-gray hidden md:block border-t border-gray-700">
              <nav class="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-center space-x-10 py-3 main-nav">
                 <a href="index.html" class="text-gray-100 hover:text-secondary transition duration-150 font-medium">Início</a>
-                <a href="novidades.html" class="text-gray-100 hover:text-secondary transition duration-150 font-medium">Novidades</a>
+                <a href="novidades.html" class="text-secondary transition duration-150 font-medium border-b-2 border-secondary pb-1">Novidades</a>
                 <a href="masculino.html" class="text-gray-100 hover:text-secondary transition duration-150 font-medium">Masculino</a>
                 <a href="feminino.html" class="text-gray-100 hover:text-secondary transition duration-150 font-medium">Feminino</a>
                 <a href="acessorios.html" class="text-gray-100 hover:text-secondary transition duration-150 font-medium">Acessórios</a>
+                <a href="sobre-nos.html" class="text-gray-100 hover:text-secondary transition duration-150 font-medium border-b-2 border-secondary pb-1">Sobre Nós</a>
                 <a href="contacto.html" class="text-gray-100 hover:text-secondary transition duration-150 font-medium">Contacto</a>
             </nav>
         </div>
@@ -142,9 +143,7 @@
     <aside id="cart-panel">
         <div class="cart-header p-4 border-b border-gray-200 flex justify-between items-center">
             <h3 class="text-xl font-bold text-dark-gray">🛒 Seu Carrinho</h3>
-            <button id="close-cart-btn" class="text-gray-500 hover:text-gray-700 text-2xl leading-none">
-                &times;
-            </button>
+            <button id="close-cart-btn" class="text-gray-500 hover:text-gray-700 text-2xl leading-none">&times;</button>
         </div>
         <div id="cart-items-list" class="flex-1 p-4 overflow-y-auto">
             <p class="empty-message text-gray-500 italic">O seu carrinho está vazio.</p>
@@ -161,63 +160,41 @@
     </aside>
 
     <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 page-content">
-        <h2 class="text-4xl font-extrabold text-dark-gray mb-10 text-center">Últimos Lançamentos</h2>
+        <h2 class="text-4xl font-extrabold text-dark-gray mb-10 text-center" id="page-title">
+            Últimos Lançamentos
+        </h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            <div class="bg-white rounded-xl shadow-2xl overflow-hidden transform hover:scale-[1.02] transition duration-300">
-                <div class="h-80 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1542037107297-c33b708e330c?q=80&w=1974&auto=format&fit=crop" alt="Vestido de Linho Verão" class="w-full h-full object-cover">
-                </div>
-                <div class="p-6">
-                    <span class="text-xs font-semibold text-white bg-secondary px-3 py-1 rounded-full mb-3 inline-block">LANÇAMENTO</span>
-                    <h3 class="text-2xl font-bold mb-2 text-dark-gray">Vestido Midi de Linho</h3>
-                    <p class="text-gray-600 mb-4">Frescura e elegância para os dias mais quentes. Disponível em 3 cores.</p>
-                    <div class="flex justify-between items-center">
-                        <p class="text-xl font-bold text-primary">R$ 499,90</p>
-                        <button data-id="N001" data-name="Vestido Midi de Linho" data-price="499.90"
-                                class="bg-tertiary text-dark-gray py-2 px-4 rounded-lg font-semibold hover:bg-yellow-400 transition duration-150 js-add-to-cart">
-                            Comprar
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-2xl overflow-hidden transform hover:scale-[1.02] transition duration-300">
-                <div class="h-80 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1550330419-4824e8e169a8?q=80&w=1935&auto=format&fit=crop" alt="Sapatilha Branca Minimalista" class="w-full h-full object-cover">
-                </div>
-                <div class="p-6">
-                    <span class="text-xs font-semibold text-white bg-primary px-3 py-1 rounded-full mb-3 inline-block">EXCLUSIVO</span>
-                    <h3 class="text-2xl font-bold mb-2 text-dark-gray">Sapatilha Urbana em Couro</h3>
-                    <p class="text-gray-600 mb-4">O conforto do dia a dia com um design clean e atemporal. Edição limitada.</p>
-                    <div class="flex justify-between items-center">
-                        <p class="text-xl font-bold text-primary">R$ 689,00</p>
-                        <button data-id="N002" data-name="Sapatilha Urbana" data-price="689.00"
-                                class="bg-tertiary text-dark-gray py-2 px-4 rounded-lg font-semibold hover:bg-yellow-400 transition duration-150 js-add-to-cart">
-                            Comprar
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-2xl overflow-hidden transform hover:scale-[1.02] transition duration-300">
-                <div class="h-80 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1523381210434-2710822f02db?q=80&w=2070&auto=format&fit=crop" alt="Casaco Corta-Vento Cinza" class="w-full h-full object-cover">
-                </div>
-                <div class="p-6">
-                    <span class="text-xs font-semibold text-white bg-dark-gray px-3 py-1 rounded-full mb-3 inline-block">UNISSEX</span>
-                    <h3 class="text-2xl font-bold mb-2 text-dark-gray">Corta-Vento Essencial</h3>
-                    <p class="text-gray-600 mb-4">Proteção leve e estilosa. Perfeito para transições de estação.</p>
-                    <div class="flex justify-between items-center">
-                        <p class="text-xl font-bold text-primary">R$ 520,50</p>
-                        <button data-id="N003" data-name="Corta-Vento Essencial" data-price="520.50"
-                                class="bg-tertiary text-dark-gray py-2 px-4 rounded-lg font-semibold hover:bg-yellow-400 transition duration-150 js-add-to-cart">
-                            Comprar
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-8">
             
+            <aside class="md:col-span-1 p-4 bg-gray-50 rounded-lg shadow-inner filter-sidebar sticky top-24 h-fit">
+                <h3 class="text-2xl font-bold text-dark-gray mb-4 border-b pb-2">Filtros</h3>
+                
+                <div class="mb-6">
+                    <label for="category-filter" class="block text-lg font-semibold mb-2 text-gray-700">Categoria</label>
+                    <select id="category-filter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                        <option value="all">Todas as Categorias</option>
+                        </select>
+                </div>
+
+                <div class="mb-6">
+                    <label for="price-range-filter" class="block text-lg font-semibold mb-2 text-gray-700">
+                        Preço Máximo: <span id="max-price-display" class="font-bold text-secondary">R$ 500,00</span>
+                    </label>
+                    <input type="range" id="price-range-filter" min="0" value="500" max="1500" step="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg">
+                </div>
+
+                <button id="reset-filters-btn" class="w-full bg-tertiary text-dark-gray py-3 rounded-lg font-semibold hover:bg-yellow-500 transition duration-150">
+                    Limpar Filtros
+                </button>
+            </aside>
+
+            <section class="md:col-span-3 lg:col-span-4">
+                <div id="products-list" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 product-grid">
+                    </div>
+
+                <div id="pagination-container" class="col-span-full mt-8">
+                    </div>
+            </section>
         </div>
         
         <section class="mt-16 bg-primary text-white p-10 rounded-xl shadow-xl text-center">

@@ -1,6 +1,7 @@
 /**
  * script.js
  * Lógica JavaScript Principal para Aura Urbana
+ * Versão Corrigida (Filtros e Inicialização)
  */
 
 // =======================================================
@@ -77,10 +78,10 @@ const PRODUCTS = [
 
 document.addEventListener("DOMContentLoaded", () => {
   // =======================================================
-  // 1. INICIALIZAÇÃO E VARIÁVEIS DO CARRINHO
+  // 1. INICIALIZAÇÃO E VARIÁVEIS DO DOM (SÓ AQUI GARANTIMOS QUE EXISTEM)
   // =======================================================
 
-  // Elementos do Carrinho
+  // Elementos do Carrinho e Navegação (GLOBAL)
   const cartPanel = document.getElementById("cart-panel");
   const cartOverlay = document.getElementById("cart-overlay");
   const cartBtn = document.getElementById("cart-btn");
@@ -88,23 +89,34 @@ document.addEventListener("DOMContentLoaded", () => {
   const cartCountElement = document.getElementById("cart-count");
   const cartTotalElement = document.getElementById("cart-total");
   const cartItemsList = document.getElementById("cart-items-list");
-  const productGrid = document.getElementById("products-list"); // Para delegação na index.html
-  const checkoutBtn = document.querySelector(".checkout-btn"); // Botão "Finalizar Compra"
+  const checkoutBtn = document.querySelector(".checkout-btn");
 
-  // Variável para a lista de produtos (pode ser null se não for index.html)
+  // Elementos do Menu Mobile
+  const menuToggleBtn = document.getElementById("menu-toggle-btn");
+  const closeMenuBtn = document.getElementById("close-menu-btn");
+  const mobileMenuPanel = document.getElementById("mobile-menu-panel");
+  const mobileMenuOverlay = document.getElementById("mobile-menu-overlay");
+
+  // Elementos da Página de Produtos (index.html)
   const productsListElement = document.getElementById("products-list");
-
-  // Variáveis de Filtro (protegidas por verificação posterior)
   const categoryFilter = document.getElementById("category-filter");
   const priceRangeFilter = document.getElementById("price-range-filter");
   const maxPriceDisplay = document.getElementById("max-price-display");
   const resetFiltersBtn = document.getElementById("reset-filters-btn");
+  const paginationContainer = document.getElementById("pagination-container");
 
+  // Variáveis de Estado
   let cart = []; // Array principal para armazenar os itens do carrinho
-
+  const PRODUCTS_PER_PAGE = 6; // 👈 NOVA CONSTANTE: 6 produtos por página
+  let currentPage = 1; // 👈 NOVA VARIÁVEL: Começamos na página 1
   // =======================================================
   // 2. FUNÇÕES DO CARRINHO (CRUD e Renderização)
+  // (Mantenha as funções loadCart, saveCart, addToCart, updateQuantity, removeItem,
+  // renderCart, updateCartCount exatamente como você enviou. Apenas remova a chamada
+  // loadCart() que estava fora do escopo.)
   // =======================================================
+
+  // Início do seu código de Funções do Carrinho...
 
   /**
    * Carrega o carrinho do LocalStorage.
@@ -113,10 +125,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const storedCart = localStorage.getItem("auraUrbanaCart");
     if (storedCart) {
       try {
-        // Tenta fazer o parse (conversão de string JSON para objeto/array JS)
         cart = JSON.parse(storedCart);
       } catch (e) {
-        // Se der erro (ex: dados corrompidos), inicia com carrinho vazio
         console.error("Erro ao carregar carrinho do LocalStorage:", e);
         cart = [];
       }
@@ -149,6 +159,9 @@ document.addEventListener("DOMContentLoaded", () => {
     openCartPanel(); // Abre o painel do carrinho ao adicionar
   };
 
+  // ... (Restante das funções de Carrinho: updateQuantity, removeItem, renderCart,
+  // renderCheckoutSummary, updateCartCount, openCartPanel, closeCartPanel)
+
   /**
    * Atualiza a quantidade de um item no carrinho.
    */
@@ -159,13 +172,11 @@ document.addEventListener("DOMContentLoaded", () => {
       item.quantity += change;
 
       if (item.quantity <= 0) {
-        // Remove o item se a quantidade for zero ou negativa
         cart = cart.filter((i) => i.id !== id);
       }
 
       saveCart();
       renderCart();
-      // Adicionado para atualizar o resumo na página de checkout após alteração de quantidade
       renderCheckoutSummary();
     }
   };
@@ -177,7 +188,6 @@ document.addEventListener("DOMContentLoaded", () => {
     cart = cart.filter((item) => item.id !== id);
     saveCart();
     renderCart();
-    // Adicionado para atualizar o resumo na página de checkout após remoção
     renderCheckoutSummary();
   };
 
@@ -216,23 +226,23 @@ document.addEventListener("DOMContentLoaded", () => {
       const formattedSubtotal = itemSubtotal.toFixed(2).replace(".", ",");
 
       itemElement.innerHTML = `
-              <div class="flex-1 pr-4">
-                  <p class="item-name font-semibold text-dark-gray truncate">${item.name}</p>
-                  <p class="item-price text-sm text-gray-500 mt-1">
-                      R$ ${formattedPrice} x ${item.quantity} = 
-                      <span class="font-bold text-primary">R$ ${formattedSubtotal}</span>
-                  </p>
-              </div>
-              
-              <div class="flex items-center space-x-2 flex-shrink-0">
-                  <div class="flex border border-gray-300 rounded-lg">
-                      <button class="btn-quantity decrease-quantity w-7 h-7 bg-gray-100 hover:bg-gray-200 text-dark-gray rounded-l-lg leading-none" data-id="${item.id}">-</button>
-                      <span class="item-quantity px-2 text-dark-gray flex items-center">${item.quantity}</span>
-                      <button class="btn-quantity increase-quantity w-7 h-7 bg-gray-100 hover:bg-gray-200 text-dark-gray rounded-r-lg leading-none" data-id="${item.id}">+</button>
-                  </div>
-                  <button class="remove-item text-red-500 hover:text-red-700 text-xl leading-none ml-2" data-id="${item.id}" title="Remover">&times;</button>
-              </div>
-          `;
+           <div class="flex-1 pr-4">
+               <p class="item-name font-semibold text-dark-gray truncate">${item.name}</p>
+               <p class="item-price text-sm text-gray-500 mt-1">
+                   R$ ${formattedPrice} x ${item.quantity} = 
+                   <span class="font-bold text-primary">R$ ${formattedSubtotal}</span>
+               </p>
+           </div>
+           
+           <div class="flex items-center space-x-2 flex-shrink-0">
+               <div class="flex border border-gray-300 rounded-lg">
+                   <button class="btn-quantity decrease-quantity w-7 h-7 bg-gray-100 hover:bg-gray-200 text-dark-gray rounded-l-lg leading-none" data-id="${item.id}">-</button>
+                   <span class="item-quantity px-2 text-dark-gray flex items-center">${item.quantity}</span>
+                   <button class="btn-quantity increase-quantity w-7 h-7 bg-gray-100 hover:bg-gray-200 text-dark-gray rounded-r-lg leading-none" data-id="${item.id}">+</button>
+               </div>
+               <button class="remove-item text-red-500 hover:text-red-700 text-xl leading-none ml-2" data-id="${item.id}" title="Remover">&times;</button>
+           </div>
+       `;
 
       cartItemsList.appendChild(itemElement);
     });
@@ -249,13 +259,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const checkoutTotalFinal = document.getElementById("checkout-total-final");
     const checkoutSubtotal = document.getElementById("checkout-subtotal");
 
-    if (!checkoutList || !checkoutTotalFinal || !checkoutSubtotal) return; // Se não estiver na página de checkout, não faz nada
+    if (!checkoutList || !checkoutTotalFinal || !checkoutSubtotal) return;
 
     checkoutList.innerHTML = "";
     let subtotal = 0;
 
     if (cart.length === 0) {
-      // Se o carrinho estiver vazio, redireciona de volta para a homepage
       checkoutList.innerHTML =
         '<p class="text-red-500 font-semibold text-center">O carrinho está vazio. Redirecionando...</p>';
       setTimeout(() => {
@@ -283,20 +292,18 @@ document.addEventListener("DOMContentLoaded", () => {
         "last:pb-0"
       );
       itemElement.innerHTML = `
-              <div>
-                  <p class="font-medium text-dark-gray">${item.name}</p>
-                  <p class="text-sm text-gray-500">${item.quantity} x R$ ${formattedPrice}</p>
-              </div>
-              <p class="font-semibold text-dark-gray">R$ ${formattedSubtotal}</p>
-          `;
+             <div>
+                 <p class="font-medium text-dark-gray">${item.name}</p>
+                 <p class="text-sm text-gray-500">${item.quantity} x R$ ${formattedPrice}</p>
+             </div>
+             <p class="font-semibold text-dark-gray">R$ ${formattedSubtotal}</p>
+         `;
 
       checkoutList.appendChild(itemElement);
     });
 
-    // Atualiza os totais
     const totalFormatted = subtotal.toFixed(2).replace(".", ",");
     checkoutSubtotal.textContent = `R$ ${totalFormatted}`;
-    // Assumimos frete grátis, então total é igual ao subtotal
     checkoutTotalFinal.textContent = `R$ ${totalFormatted}`;
   };
 
@@ -308,10 +315,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     cartCountElement.textContent = totalItems;
   };
-
-  // =======================================================
-  // 3. FUNÇÕES DE MANIPULAÇÃO DO DOM (Ouvintes de Carrinho e Checkout)
-  // =======================================================
 
   /**
    * Abre o painel lateral do carrinho.
@@ -333,6 +336,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // Fim do seu código de Funções do Carrinho.
+
+  // =======================================================
+  // 3. FUNÇÕES DE MANIPULAÇÃO DO DOM (Ouvintes de Carrinho e Checkout)
+  // (Mantenha todos os seus event listeners aqui, eles estavam corretos.)
+  // =======================================================
+
   // Ouvinte para abrir o carrinho
   if (cartBtn) {
     cartBtn.addEventListener("click", (e) => {
@@ -352,12 +362,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Delegação de eventos para botões de adicionar ao carrinho (GLOBAL)
-  // Garante que os botões funcionem em qualquer página.
   document.addEventListener("click", (e) => {
     const button = e.target.closest(".js-add-to-cart");
 
     if (button && !button.classList.contains("detail-add-btn")) {
-      // Ignora o botão de detalhe para evitar duplicidade de ação
       e.preventDefault();
 
       const id = button.getAttribute("data-id");
@@ -368,7 +376,7 @@ document.addEventListener("DOMContentLoaded", () => {
         addToCart(id, name, price);
       } else {
         console.error(
-          "Erro: Botão 'Adicionar ao Carrinho' sem atributos de dados (data-id, data-name, data-price)."
+          "Erro: Botão 'Adicionar ao Carrinho' sem atributos de dados."
         );
       }
     }
@@ -395,7 +403,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Ouvinte para o botão Finalizar Compra
   if (checkoutBtn) {
     checkoutBtn.addEventListener("click", (e) => {
-      // Verifica se o carrinho não está vazio antes de prosseguir
       if (cart.length > 0) {
         window.location.href = "checkout.html";
       } else {
@@ -408,12 +415,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // =======================================================
   // 4. LÓGICA DO MENU MOBILE
+  // (Mantenha as suas funções e listeners de menu mobile aqui)
   // =======================================================
-
-  const menuToggleBtn = document.getElementById("menu-toggle-btn");
-  const closeMenuBtn = document.getElementById("close-menu-btn");
-  const mobileMenuPanel = document.getElementById("mobile-menu-panel");
-  const mobileMenuOverlay = document.getElementById("mobile-menu-overlay");
 
   if (menuToggleBtn && mobileMenuPanel && mobileMenuOverlay) {
     // Função para abrir o menu
@@ -432,7 +435,6 @@ document.addEventListener("DOMContentLoaded", () => {
     closeMenuBtn.addEventListener("click", closeMobileMenu);
     mobileMenuOverlay.addEventListener("click", closeMobileMenu);
 
-    // Fechar menu ao clicar num link (para navegação)
     mobileMenuPanel.querySelectorAll("a").forEach((link) => {
       link.addEventListener("click", closeMobileMenu);
     });
@@ -440,6 +442,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // =======================================================
   // 5. VALIDAÇÃO DO FORMULÁRIO DE CONTACTO
+  // (Mantenha o seu código de validação de contacto aqui)
   // =======================================================
 
   const contactForm = document.getElementById("contact-form");
@@ -448,34 +451,25 @@ document.addEventListener("DOMContentLoaded", () => {
   if (contactForm) {
     // Função de validação de campo individual
     const validateField = (input) => {
-      // Verifica se o input e seus elementos pais existem
       const container = input.closest(".form-group");
       const errorMessage = document.getElementById(`${input.id}-error`);
       let isValid = true;
       let message = "";
 
-      // 1. Validação de Campo Vazio
       if (input.hasAttribute("required") && input.value.trim() === "") {
         isValid = false;
         message = "Este campo é obrigatório.";
-      }
-
-      // 2. Validação de E-mail
-      else if (input.id === "email" && input.value.trim() !== "") {
+      } else if (input.id === "email" && input.value.trim() !== "") {
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailPattern.test(input.value.trim())) {
           isValid = false;
           message = "Por favor, insira um endereço de e-mail válido.";
         }
-      }
-
-      // 3. Validação do Assunto
-      else if (input.id === "subject" && input.value === "") {
+      } else if (input.id === "subject" && input.value === "") {
         isValid = false;
         message = "Por favor, selecione um assunto.";
       }
 
-      // Atualizar classes e mensagens
       if (container && errorMessage) {
         if (isValid) {
           container.classList.remove("error");
@@ -497,7 +491,6 @@ document.addEventListener("DOMContentLoaded", () => {
         "input[required], select[required], textarea[required]"
       );
 
-      // Valida todos os campos ao submeter
       requiredInputs.forEach((input) => {
         if (!validateField(input)) {
           formIsValid = false;
@@ -505,7 +498,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (formIsValid) {
-        // Simulação de envio bem-sucedido
         console.log("Formulário Submetido com Sucesso:", {
           name: document.getElementById("name").value,
           email: document.getElementById("email").value,
@@ -513,11 +505,9 @@ document.addEventListener("DOMContentLoaded", () => {
           message: document.getElementById("message").value,
         });
 
-        // Mostrar mensagem de sucesso e limpar formulário
         contactForm.reset();
         if (formSuccessMessage) {
           formSuccessMessage.style.display = "block";
-          // Esconder a mensagem após 5 segundos
           setTimeout(() => {
             formSuccessMessage.style.display = "none";
           }, 5000);
@@ -536,6 +526,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // =======================================================
   // 5.5. LÓGICA DE SIMULAÇÃO DE PAGAMENTO (CHECKOUT)
+  // (Mantenha o seu código de checkout aqui)
   // =======================================================
 
   const checkoutForm = document.getElementById("checkout-form");
@@ -545,7 +536,6 @@ document.addEventListener("DOMContentLoaded", () => {
     checkoutForm.addEventListener("submit", (e) => {
       e.preventDefault();
 
-      // 1. Validação simples dos campos de envio
       const requiredFields = checkoutForm.querySelectorAll("[required]");
       let allValid = true;
 
@@ -558,7 +548,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
-      // Adicionalmente, verifica se pelo menos um método de pagamento está selecionado
       const paymentMethodSelected = checkoutForm.querySelector(
         'input[name="payment_method"]:checked'
       );
@@ -570,26 +559,21 @@ document.addEventListener("DOMContentLoaded", () => {
         alert(
           "Por favor, preencha todos os campos obrigatórios e selecione um método de pagamento."
         );
-        return; // Impede a continuação se houver campos vazios
+        return;
       }
 
-      // 2. Simulação do Processamento
       const submitButton = checkoutForm.querySelector('button[type="submit"]');
 
-      // Desabilita o botão e mostra um loading
       submitButton.disabled = true;
       submitButton.textContent = "Processando Pagamento...";
       submitButton.classList.remove("bg-secondary", "hover:bg-teal-600");
       submitButton.classList.add("bg-gray-500");
 
-      // 3. Simulação de 3 segundos de processamento
       setTimeout(() => {
-        // Gerar um ID de pedido simulado (usando data e um número aleatório)
         const orderId = `AU-${new Date().getFullYear()}-${Math.floor(
           1000 + Math.random() * 9000
         )}`;
 
-        // Capturar o total e os itens do carrinho antes de limpar
         const orderTotalElement = document.getElementById(
           "checkout-total-final"
         );
@@ -597,18 +581,15 @@ document.addEventListener("DOMContentLoaded", () => {
           ? orderTotalElement.textContent
           : "R$ 0,00";
 
-        // Função auxiliar para obter o valor de forma segura
         const getInputValue = (id) => {
           const element = document.getElementById(id);
-          // Retorna o valor, ou 'Não informado' se o elemento não existir
           return element ? element.value.trim() : "Não informado";
         };
 
-        // Criar o objeto de detalhes do pedido
         const orderDetails = {
           id: orderId,
           date: new Date().toLocaleDateString("pt-BR"),
-          items: cart, // Guarda a lista de itens do carrinho
+          items: cart,
           total: orderTotal,
           customerInfo: {
             name: getInputValue("name"),
@@ -620,22 +601,18 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         };
 
-        // 🌟 PASSO CHAVE: SALVAR DETALHES DO PEDIDO NO LOCALSTORAGE
         localStorage.setItem(
           "auraUrbanaLastOrder",
           JSON.stringify(orderDetails)
         );
 
-        // Limpar o carrinho (A COMPRA FOI CONCLUÍDA!)
         cart = [];
-        saveCart(); // Salva o carrinho vazio
+        saveCart();
 
-        // Redireciona para a página de sucesso
         window.location.href = "order-success.html";
-      }, 3000); // 3 segundos de espera
+      }, 3000);
     });
 
-    // Lógica para mostrar/esconder campos do cartão
     const paymentRadios = checkoutForm.querySelectorAll(
       'input[name="payment_method"]'
     );
@@ -648,13 +625,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (isCreditCardSelected) {
         creditCardFields.style.display = "block";
-        // Requer campos de cartão ao selecionar Cartão de Crédito
         creditCardFields
           .querySelectorAll("input")
           .forEach((input) => input.setAttribute("required", "required"));
       } else {
         creditCardFields.style.display = "none";
-        // Remove 'required' para não bloquear a submissão com PIX/Boleto
         creditCardFields
           .querySelectorAll("input")
           .forEach((input) => input.removeAttribute("required"));
@@ -665,35 +640,32 @@ document.addEventListener("DOMContentLoaded", () => {
       radio.addEventListener("change", updateCreditCardRequiredStatus);
     });
 
-    // Inicializa a visibilidade dos campos de cartão
     updateCreditCardRequiredStatus();
   }
 
   // =======================================================
   // 5.6. LÓGICA DE CARREGAMENTO DOS DETALHES DO PEDIDO (order-success.html)
+  // (Mantenha o seu código de order-success aqui)
   // =======================================================
 
   /**
    * Carrega e exibe os detalhes do último pedido salvo.
    */
   const loadOrderDetails = () => {
-    // Tenta obter o JSON do último pedido
     const storedOrder = localStorage.getItem("auraUrbanaLastOrder");
 
-    // 🛡️ Proteção: Se não estivermos na página de sucesso (os IDs não existem), sai.
     if (!document.getElementById("order-id")) return;
 
     if (!storedOrder) {
-      // Caso não haja dados de pedido (ex: acesso direto à página)
       const mainContent = document.querySelector("main");
       if (mainContent) {
         mainContent.innerHTML = `
-                  <div class="max-w-md mx-auto p-10 bg-white shadow-xl rounded-xl text-center">
-                      <p class="text-red-500 text-xl font-bold mb-4">Nenhum pedido recente encontrado.</p>
-                      <p class="text-gray-600 mb-6">Por favor, finalize uma compra para ver os detalhes aqui.</p>
-                      <a href="index.html" class="inline-block bg-primary text-white py-2 px-6 rounded-lg font-semibold hover:bg-indigo-700">Voltar à Loja</a>
-                  </div>
-              `;
+                 <div class="max-w-md mx-auto p-10 bg-white shadow-xl rounded-xl text-center">
+                     <p class="text-red-500 text-xl font-bold mb-4">Nenhum pedido recente encontrado.</p>
+                     <p class="text-gray-600 mb-6">Por favor, finalize uma compra para ver os detalhes aqui.</p>
+                     <a href="index.html" class="inline-block bg-primary text-white py-2 px-6 rounded-lg font-semibold hover:bg-indigo-700">Voltar à Loja</a>
+                 </div>
+             `;
       }
       return;
     }
@@ -702,12 +674,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const order = JSON.parse(storedOrder);
       const customer = order.customerInfo;
 
-      // 1. Detalhes Principais
       document.getElementById("order-id").textContent = `#${order.id}`;
       document.getElementById("order-date").textContent = order.date;
       document.getElementById("order-total").textContent = order.total;
 
-      // 2. Endereço de Envio
       document.getElementById("customer-name").textContent = customer.name;
       document.getElementById("customer-address").textContent =
         customer.address;
@@ -716,7 +686,6 @@ document.addEventListener("DOMContentLoaded", () => {
         customer.postal_code;
       document.getElementById("customer-email").textContent = customer.email;
 
-      // 3. Lista de Itens
       const itemsList = document.getElementById("order-items-list");
       itemsList.innerHTML = "";
 
@@ -734,12 +703,12 @@ document.addEventListener("DOMContentLoaded", () => {
           "last:border-b-0"
         );
         itemElement.innerHTML = `
-                  <div>
-                      <p class="font-medium text-dark-gray">${item.name}</p>
-                      <p class="text-sm text-gray-500">${item.quantity} x R$ ${formattedPrice}</p>
-                  </div>
-                  <p class="font-semibold text-dark-gray">R$ ${formattedSubtotal}</p>
-              `;
+                     <div>
+                         <p class="font-medium text-dark-gray">${item.name}</p>
+                         <p class="text-sm text-gray-500">${item.quantity} x R$ ${formattedPrice}</p>
+                     </div>
+                     <p class="font-semibold text-dark-gray">R$ ${formattedSubtotal}</p>
+                 `;
         itemsList.appendChild(itemElement);
       });
     } catch (e) {
@@ -751,6 +720,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // =======================================================
   // 5.7. LÓGICA DE CARREGAMENTO DO DETALHE DO PRODUTO (product-detail.html)
+  // (Mantenha o seu código de product-detail aqui)
   // =======================================================
 
   /**
@@ -758,95 +728,88 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   const loadProductDetail = () => {
     const detailContainer = document.getElementById("product-detail-container");
-    if (!detailContainer) return; // Sai se não estiver na página correta
+    if (!detailContainer) return;
 
-    // 1. Obter o ID do produto da URL (Ex: product-detail.html?id=P001)
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get("id");
 
-    // 2. Buscar o produto no array global PRODUCTS
     const product = PRODUCTS.find((p) => p.id === productId);
 
-    detailContainer.innerHTML = ""; // Limpa a mensagem de loading
+    detailContainer.innerHTML = "";
 
     if (!product) {
-      // Produto não encontrado
       detailContainer.innerHTML = `
-              <div class="text-center py-20">
-                  <h1 class="text-3xl font-bold text-red-500 mb-4">Produto Não Encontrado</h1>
-                  <p class="text-lg text-gray-600">O ID do produto (${productId}) não é válido ou não existe em nosso catálogo.</p>
-                  <a href="index.html" class="mt-6 inline-block bg-primary text-white py-2 px-6 rounded-lg hover:bg-indigo-700 transition">Voltar à Loja</a>
-              </div>
-          `;
+               <div class="text-center py-20">
+                   <h1 class="text-3xl font-bold text-red-500 mb-4">Produto Não Encontrado</h1>
+                   <p class="text-lg text-gray-600">O ID do produto (${productId}) não é válido ou não existe em nosso catálogo.</p>
+                   <a href="index.html" class="mt-6 inline-block bg-primary text-white py-2 px-6 rounded-lg hover:bg-indigo-700 transition">Voltar à Loja</a>
+               </div>
+           `;
       const pageTitle = document.getElementById("page-title");
       if (pageTitle) pageTitle.textContent = "Produto Não Encontrado";
       return;
     }
 
-    // 3. Renderizar os detalhes do produto
     const formattedPrice = product.price.toFixed(2).replace(".", ",");
 
-    // Atualiza o título da página
     const pageTitle = document.getElementById("page-title");
     if (pageTitle) pageTitle.textContent = `${product.name} - Aura Urbana`;
 
     detailContainer.innerHTML = `
-          <div class="grid md:grid-cols-2 gap-12 items-start">
-              <div class="md:sticky md:top-24">
-                  <img id="product-image" src="${product.image}" alt="${product.name}" 
-                      class="w-full h-auto rounded-lg shadow-xl object-cover aspect-square">
-              </div>
+             <div class="grid md:grid-cols-2 gap-12 items-start">
+                 <div class="md:sticky md:top-24">
+                     <img id="product-image" src="${product.image}" alt="${product.name}" 
+                         class="w-full h-auto rounded-lg shadow-xl object-cover aspect-square">
+                 </div>
 
-              <div>
-                  <span class="text-sm font-semibold text-primary uppercase tracking-wider">${product.category}</span>
-                  <h1 id="product-name" class="text-4xl lg:text-5xl font-extrabold text-dark-gray mt-2 mb-4">${product.name}</h1>
-                  
-                  <p id="product-price" class="text-4xl font-extrabold text-secondary mb-8">R$ ${formattedPrice}</p>
-                  
-                  <div class="mb-8">
-                      <h3 class="text-xl font-bold mb-3 border-b pb-1">Descrição</h3>
-                      <p class="text-gray-700 leading-relaxed">
-                          Este é um produto de alta qualidade, feito com materiais premium. Perfeito para o seu estilo 
-                          urbano e sofisticado. Detalhes em lã natural e corte slim para um caimento impecável. 
-                          Disponível em tamanhos limitados.
-                      </p>
-                  </div>
+                 <div>
+                     <span class="text-sm font-semibold text-primary uppercase tracking-wider">${product.category}</span>
+                     <h1 id="product-name" class="text-4xl lg:text-5xl font-extrabold text-dark-gray mt-2 mb-4">${product.name}</h1>
+                     
+                     <p id="product-price" class="text-4xl font-extrabold text-secondary mb-8">R$ ${formattedPrice}</p>
+                     
+                     <div class="mb-8">
+                         <h3 class="text-xl font-bold mb-3 border-b pb-1">Descrição</h3>
+                         <p class="text-gray-700 leading-relaxed">
+                             Este é um produto de alta qualidade, feito com materiais premium. Perfeito para o seu estilo 
+                             urbano e sofisticado. Detalhes em lã natural e corte slim para um caimento impecável. 
+                             Disponível em tamanhos limitados.
+                         </p>
+                     </div>
 
-                  <div class="space-y-6">
-                      <div>
-                          <label for="size-select" class="block text-lg font-semibold mb-2">Tamanho:</label>
-                          <select id="size-select" class="w-full md:w-auto p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
-                              <option>P</option>
-                              <option>M</option>
-                              <option selected>G</option>
-                              <option>GG</option>
-                          </select>
-                      </div>
+                     <div class="space-y-6">
+                         <div>
+                             <label for="size-select" class="block text-lg font-semibold mb-2">Tamanho:</label>
+                             <select id="size-select" class="w-full md:w-auto p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                                 <option>P</option>
+                                 <option>M</option>
+                                 <option selected>G</option>
+                                 <option>GG</option>
+                             </select>
+                         </div>
 
-                      <div>
-                          <label for="quantity-input" class="block text-lg font-semibold mb-2">Quantidade:</label>
-                          <input id="quantity-input" type="number" value="1" min="1" max="10" 
-                              class="w-20 p-3 border border-gray-300 rounded-lg text-center focus:ring-primary focus:border-primary">
-                      </div>
-                      
-                      <button data-id="${product.id}" 
-                              data-name="${product.name}" 
-                              data-price="${product.price}"
-                              class="w-full bg-primary text-white py-4 rounded-lg text-xl font-bold hover:bg-indigo-600 transition duration-150 js-add-to-cart detail-add-btn">
-                          <svg class="w-6 h-6 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                          Adicionar ao Carrinho
-                      </button>
-                  </div>
-                  
-                  <div id="added-message" class="mt-4 p-3 bg-secondary text-white rounded-lg hidden">
-                      Adicionado ao carrinho!
-                  </div>
-              </div>
-          </div>
-      `;
+                         <div>
+                             <label for="quantity-input" class="block text-lg font-semibold mb-2">Quantidade:</label>
+                             <input id="quantity-input" type="number" value="1" min="1" max="10" 
+                                 class="w-20 p-3 border border-gray-300 rounded-lg text-center focus:ring-primary focus:border-primary">
+                         </div>
+                         
+                         <button data-id="${product.id}" 
+                                 data-name="${product.name}" 
+                                 data-price="${product.price}"
+                                 class="w-full bg-primary text-white py-4 rounded-lg text-xl font-bold hover:bg-indigo-600 transition duration-150 js-add-to-cart detail-add-btn">
+                             <svg class="w-6 h-6 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                             Adicionar ao Carrinho
+                         </button>
+                     </div>
+                     
+                     <div id="added-message" class="mt-4 p-3 bg-secondary text-white rounded-lg hidden">
+                         Adicionado ao carrinho!
+                     </div>
+                 </div>
+             </div>
+         `;
 
-    // Adiciona um listener especial para o botão Adicionar ao Carrinho na página de detalhe
-    // Para que ele adicione a quantidade correta (obtida do input)
     const detailAddButton = detailContainer.querySelector(".detail-add-btn");
     const quantityInput = document.getElementById("quantity-input");
     const addedMessage = document.getElementById("added-message");
@@ -856,18 +819,15 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         const quantity = parseInt(quantityInput.value, 10);
 
-        // Adiciona o produto a quantidade de vezes especificada
         for (let i = 0; i < quantity; i++) {
           addToCart(product.id, product.name, product.price);
         }
 
-        // Exibir mensagem de sucesso temporariamente
         addedMessage.classList.remove("hidden");
         setTimeout(() => {
           addedMessage.classList.add("hidden");
         }, 2000);
 
-        // Reseta a quantidade para 1 após a adição
         quantityInput.value = 1;
       });
     }
@@ -875,89 +835,206 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // =======================================================
   // 6. LÓGICA DE FILTRAGEM E RENDERIZAÇÃO DE PRODUTOS
+  // 🎯 SUAS FUNÇÕES CORRIGIDAS ESTÃO AQUI 🎯
+  // =======================================================
+
+  // =======================================================
+  // 6. LÓGICA DE FILTRAGEM, PAGINAÇÃO E RENDERIZAÇÃO
   // =======================================================
 
   /**
-   * Renderiza uma lista de produtos na página.
-   * @param {Array<Object>} productsArray - A lista de produtos a ser exibida (filtrada ou não).
+   * Renderiza os controles de paginação.
+   * @param {number} totalProducts - Número total de produtos filtrados.
    */
-  function renderProducts(productsArray = PRODUCTS) {
-    // 🛡️ Proteção: Sai da função se o elemento principal de lista não existir
+  function renderPaginationControls(totalProducts) {
+    if (!paginationContainer) return;
+
+    paginationContainer.innerHTML = "";
+
+    // Calcula o número total de páginas necessárias
+    const totalPages = Math.ceil(totalProducts / PRODUCTS_PER_PAGE);
+
+    if (totalPages <= 1) return; // Não mostra paginação se houver apenas 1 página
+
+    const paginationDiv = document.createElement("div");
+    paginationDiv.classList.add(
+      "flex",
+      "justify-center",
+      "items-center",
+      "space-x-2",
+      "mt-8",
+      "col-span-full"
+    );
+
+    // --- Botão Anterior ---
+    const prevBtn = document.createElement("button");
+    prevBtn.textContent = "Anterior";
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.classList.add("px-3", "py-1", "rounded", "transition");
+    prevBtn.classList.add(
+      prevBtn.disabled ? "bg-gray-200" : "bg-white",
+      "hover:bg-gray-100"
+    );
+    prevBtn.addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage--;
+        applyFilters(false); // Não reseta a página
+      }
+    });
+    paginationDiv.appendChild(prevBtn);
+
+    // --- Botões Numéricos ---
+    for (let i = 1; i <= totalPages; i++) {
+      const pageBtn = document.createElement("button");
+      pageBtn.textContent = i;
+      pageBtn.classList.add(
+        "px-3",
+        "py-1",
+        "rounded",
+        "font-semibold",
+        "transition"
+      );
+
+      if (i === currentPage) {
+        pageBtn.classList.add("bg-primary", "text-white");
+      } else {
+        pageBtn.classList.add(
+          "bg-white",
+          "text-dark-gray",
+          "hover:bg-gray-100"
+        );
+        pageBtn.addEventListener("click", () => {
+          currentPage = i;
+          applyFilters(false); // Não reseta a página
+        });
+      }
+      paginationDiv.appendChild(pageBtn);
+    }
+
+    // --- Botão Próximo ---
+    const nextBtn = document.createElement("button");
+    nextBtn.textContent = "Próximo";
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.classList.add("px-3", "py-1", "rounded", "transition");
+    nextBtn.classList.add(
+      nextBtn.disabled ? "bg-gray-200" : "bg-white",
+      "hover:bg-gray-100"
+    );
+    nextBtn.addEventListener("click", () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        applyFilters(false); // Não reseta a página
+      }
+    });
+    paginationDiv.appendChild(nextBtn);
+
+    paginationContainer.appendChild(paginationDiv);
+  }
+
+  /**
+   * Renderiza APENAS os produtos da página atual.
+   * @param {Array<Object>} productsArray - A lista de produtos filtrada.
+   */
+  function renderPage(productsArray) {
     if (!productsListElement) return;
+
+    // 1. Calcula o início e o fim do slice
+    const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+    const endIndex = startIndex + PRODUCTS_PER_PAGE;
+
+    // 2. Obtém a sub-lista de produtos da página atual
+    const productsToRender = productsArray.slice(startIndex, endIndex);
 
     productsListElement.innerHTML = ""; // Limpa a lista existente
 
-    if (productsArray.length === 0) {
+    if (productsToRender.length === 0) {
       productsListElement.innerHTML =
-        '<p class="text-xl text-gray-600 col-span-full text-center py-10">Nenhum produto encontrado com os filtros aplicados.</p>';
+        '<p class="text-xl text-gray-600 col-span-full text-center py-10">Nenhum produto encontrado com os filtros aplicados nesta página.</p>';
       return;
     }
 
-    productsArray.forEach((product) => {
+    productsToRender.forEach((product) => {
+      // ... (Seu código existente para criar o card do produto - renderProducts)
       const productElement = document.createElement("div");
       productElement.classList.add(
         "product-card",
         "bg-white",
         "rounded-lg",
         "shadow-lg",
-        "overflow-hidden"
+        "overflow-hidden",
+        "transition-all",
+        "duration-300",
+        "transform",
+        "hover:scale-[1.02]",
+        "hover:shadow-2xl"
       );
 
       const formattedPrice = product.price.toFixed(2).replace(".", ",");
 
-      // Agora, o nome e a imagem são links para a página de detalhe do produto
       productElement.innerHTML = `
-              <div class="card-image h-64 overflow-hidden">
-                  <a href="product-detail.html?id=${product.id}">
-                      <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover transform hover:scale-105 transition duration-300">
-                  </a>
-              </div>
-              <div class="card-content p-4">
-                  <a href="product-detail.html?id=${product.id}">
-                      <h3 class="text-xl font-semibold mb-1 truncate hover:text-primary transition duration-150">${product.name}</h3>
-                  </a>
-                  <p class="text-sm text-gray-500 mb-2">${product.category}</p>
-                  <p class="price text-2xl font-bold text-secondary mb-4">R$ ${formattedPrice}</p>
-                  <button data-id="${product.id}" data-name="${product.name}" data-price="${product.price}" 
-                          class="w-full bg-primary text-white py-2 rounded-lg font-semibold hover:bg-indigo-600 transition duration-150 js-add-to-cart">
-                      Adicionar ao Carrinho
-                  </button>
-              </div>
-          `;
+          <div class="card-image h-64 overflow-hidden">
+              <a href="product-detail.html?id=${product.id}">
+                  <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover transform hover:scale-105 transition duration-300">
+              </a>
+          </div>
+          <div class="card-content p-4">
+              <span class="text-sm text-primary uppercase font-bold">${product.category}</span>
+              <a href="product-detail.html?id=${product.id}">
+                  <h3 class="text-xl font-semibold mb-1 truncate hover:text-primary transition duration-150">${product.name}</h3>
+              </a>
+              <p class="price text-2xl font-bold text-secondary mb-4">R$ ${formattedPrice}</p>
+              <button data-id="${product.id}" data-name="${product.name}" data-price="${product.price}" 
+                      class="w-full bg-primary text-white py-2 rounded-lg font-semibold hover:bg-indigo-600 transition duration-150 js-add-to-cart">
+                  Adicionar ao Carrinho
+              </button>
+          </div>
+      `;
       productsListElement.appendChild(productElement);
     });
+
+    // 3. Renderiza os controles de paginação com base na lista COMPLETA filtrada
+    renderPaginationControls(productsArray.length);
   }
 
   /**
-   * Popula o dropdown de categorias com base nos produtos disponíveis.
+   * Popula o dropdown de categorias (Sem alteração).
+   */
+  /**
+   * Popula o dropdown de categorias com base nas categorias únicas dos produtos.
    */
   function populateCategoryFilter() {
-    // 🛡️ Proteção: Sai da função se o elemento não existir
     if (!categoryFilter) return;
 
-    // 1. Obter todas as categorias únicas
-    const categories = PRODUCTS.map((p) => p.category);
-    const uniqueCategories = ["all", ...new Set(categories)].sort();
+    // 1. Encontra todas as categorias únicas
+    const uniqueCategories = [
+      ...new Set(PRODUCTS.map((product) => product.category)),
+    ].sort(); // Ordena as categorias alfabeticamente
 
-    // 2. Limpar e popular o dropdown
-    categoryFilter.innerHTML = "";
+    // 2. Limpa o filtro, mantendo a opção "Todas"
+    // Mantemos a primeira opção que deve ser "all"
+    categoryFilter.innerHTML =
+      '<option value="all">Todas as Categorias</option>';
+
+    // 3. Adiciona as categorias únicas
     uniqueCategories.forEach((category) => {
       const option = document.createElement("option");
       option.value = category;
-      option.textContent =
-        category === "all" ? "Todas as Categorias" : category;
+      option.textContent = category;
       categoryFilter.appendChild(option);
     });
   }
 
   /**
    * Filtra a lista de produtos com base nos filtros selecionados e atualiza o display.
+   * @param {boolean} [resetPage=true] - Se deve resetar a página atual para 1 (ocorre ao mudar um filtro).
    */
-  function applyFilters() {
-    // 🛡️ Proteção: Sai da função se o elemento principal de lista não existir
+  function applyFilters(resetPage = true) {
     if (!productsListElement || !categoryFilter || !priceRangeFilter) return;
 
-    // Obter os valores atuais dos filtros
+    if (resetPage) {
+      currentPage = 1; // Sempre que um filtro muda, voltamos para a primeira página
+    }
+
     const selectedCategory = categoryFilter.value;
     const maxPrice = parseFloat(priceRangeFilter.value);
 
@@ -975,22 +1052,19 @@ document.addEventListener("DOMContentLoaded", () => {
       (product) => product.price <= maxPrice
     );
 
-    // 3. Renderizar a lista filtrada
-    renderProducts(filteredProducts);
+    // 3. Renderizar a página ATUAL da lista filtrada
+    renderPage(filteredProducts);
   }
+  // ... (Seção 7 - Dentro de document.addEventListener("DOMContentLoaded", () => { ... ) ...
 
-  // =======================================================
-  // 7. INICIALIZAÇÃO FINAL
-  // =======================================================
-
-  // Configurações iniciais para os filtros (somente se estiver na index.html)
-  if (priceRangeFilter && maxPriceDisplay) {
+  // --- Lógica Específica para a Página Principal (index.html) ---
+  if (productsListElement) {
     // Encontra o preço máximo real nos dados e define o range
     const maxProductPrice = PRODUCTS.reduce(
       (max, product) => Math.max(max, product.price),
       0
     );
-    // Arredonda para o múltiplo de 50 ou 100 mais próximo acima
+    // Arredonda para o múltiplo de 50 mais próximo acima
     const priceMax = Math.ceil(maxProductPrice / 50) * 50;
 
     // Define o máximo do range slider e o valor inicial
@@ -999,53 +1073,97 @@ document.addEventListener("DOMContentLoaded", () => {
     maxPriceDisplay.textContent = `R$ ${priceMax.toFixed(2).replace(".", ",")}`;
 
     // Inicializa os Produtos e Filtros
-    renderProducts();
     populateCategoryFilter();
+    applyFilters(true); // 👈 Chamada inicial: Carrega a primeira página com todos os produtos
 
     // Adiciona Event Listeners para Filtros
-    if (categoryFilter) {
-      categoryFilter.addEventListener("change", applyFilters);
-    }
+    categoryFilter.addEventListener("change", () => applyFilters(true)); // Resetar página
 
-    if (priceRangeFilter) {
+    priceRangeFilter.addEventListener("input", () => {
+      maxPriceDisplay.textContent = `R$ ${parseFloat(priceRangeFilter.value)
+        .toFixed(2)
+        .replace(".", ",")}`;
+      applyFilters(true); // Resetar página
+    });
+
+    // Listener para o botão de reset
+    resetFiltersBtn.addEventListener("click", () => {
+      categoryFilter.value = "all";
+      priceRangeFilter.value = priceMax;
+      maxPriceDisplay.textContent = `R$ ${priceMax
+        .toFixed(2)
+        .replace(".", ",")}`;
+      applyFilters(true); // Resetar página e aplicar filtros
+    });
+  }
+  // ... (Restante da sua lógica de inicialização de páginas, como loadCart(), etc.) ...
+
+  // =======================================================
+  // 7. FUNÇÃO DE INICIALIZAÇÃO GLOBAL (INIT)
+  // =======================================================
+
+  /**
+   * Função de inicialização principal que configura todos os módulos.
+   */
+  const init = () => {
+    loadCart(); // 1. Carrega o carrinho e renderiza a UI
+
+    // --- Lógica Específica para a Página Principal (index.html) ---
+    if (productsListElement) {
+      // 2. Configuração dos Filtros
+      const maxProductPrice = PRODUCTS.reduce(
+        (max, product) => Math.max(max, product.price),
+        0
+      );
+      const priceMax = Math.ceil(maxProductPrice / 50) * 50; // Arredonda para cima
+
+      priceRangeFilter.max = priceMax;
+      priceRangeFilter.value = priceMax;
+      maxPriceDisplay.textContent = `R$ ${priceMax
+        .toFixed(2)
+        .replace(".", ",")}`;
+
+      // 3. Inicializa Produtos e Filtros
+      populateCategoryFilter();
+      applyFilters(); // Renderiza com todos os filtros iniciais (todos os produtos)
+
+      // 4. Event Listeners para Filtros
+      categoryFilter.addEventListener("change", applyFilters);
+
       priceRangeFilter.addEventListener("input", () => {
-        // Atualiza o display do preço em tempo real
-        if (maxPriceDisplay) {
-          maxPriceDisplay.textContent = `R$ ${parseFloat(priceRangeFilter.value)
-            .toFixed(2)
-            .replace(".", ",")}`;
-        }
+        maxPriceDisplay.textContent = `R$ ${parseFloat(priceRangeFilter.value)
+          .toFixed(2)
+          .replace(".", ",")}`;
+        applyFilters();
+      });
+
+      resetFiltersBtn.addEventListener("click", () => {
+        categoryFilter.value = "all";
+        priceRangeFilter.value = priceMax;
+        maxPriceDisplay.textContent = `R$ ${priceMax
+          .toFixed(2)
+          .replace(".", ",")}`;
         applyFilters();
       });
     }
 
-    if (resetFiltersBtn && categoryFilter && priceRangeFilter) {
-      resetFiltersBtn.addEventListener("click", () => {
-        // Reseta a categoria para 'all'
-        categoryFilter.value = "all";
-
-        // Reseta o slider para o valor máximo
-        const priceMaxReset = priceRangeFilter.max;
-        priceRangeFilter.value = priceMaxReset;
-
-        if (maxPriceDisplay) {
-          maxPriceDisplay.textContent = `R$ ${parseFloat(priceMaxReset)
-            .toFixed(2)
-            .replace(".", ",")}`;
-        }
-        applyFilters(); // Aplica os filtros (que agora estão resetados)
-      });
+    // --- Lógica Específica para Outras Páginas ---
+    if (document.getElementById("checkout-items-list")) {
+      renderCheckoutSummary();
     }
-  }
 
-  loadCart(); // Carrega o carrinho quando a página é carregada
+    if (document.getElementById("product-detail-container")) {
+      loadProductDetail();
+    }
 
-  // Renderiza o resumo do checkout, se estiver na página
-  renderCheckoutSummary();
+    if (document.getElementById("order-id")) {
+      loadOrderDetails();
+    }
+  };
 
-  // Carrega os detalhes do pedido, se estiver na página de sucesso
-  loadOrderDetails();
+  // =======================================================
+  // 8. CHAMA A FUNÇÃO INIT NO DOMContentLoaded
+  // =======================================================
 
-  // Carrega os detalhes do produto, se estiver na página de detalhes
-  loadProductDetail();
-});
+  init(); // Executa a inicialização após o DOM carregar
+}); // Fim do DOMContentLoaded
